@@ -35,7 +35,7 @@ def run_j1_on_uc1_p1(
     Parameters
     ----------
     client:
-        Bedrock Runtime client.
+        OpenAI client.
     prompt_version:
         Version of the UC1-P1 prompt to evaluate (e.g. "01", "02").
     loader:
@@ -45,7 +45,7 @@ def run_j1_on_uc1_p1(
     judge_version:
         Version of the J1 judge prompt to use.
     model_id:
-        Bedrock model ID for the judge LLM.
+        OpenAI model ID for the judge LLM.
     """
     prompt = Prompt(id=PromptIdEnum.UC1_P1_EXTRACTION.value, version=prompt_version)
 
@@ -54,7 +54,7 @@ def run_j1_on_uc1_p1(
         user_prompt_text = prompt.user_prompt_template.render(data=loader.data)
 
     data = J1UserPromptData(
-        target_system_prompt=prompt.system_prompt_content,
+        target_system_prompt=prompt.system_prompt_template.render(),
         target_user_prompt_template=user_prompt_text,
     )
 
