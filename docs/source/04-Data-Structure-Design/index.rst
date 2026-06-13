@@ -18,7 +18,7 @@ Design Principles
 ------------------------------------------------------------------------------
 1. **TOML for structured test data** — TOML's native multiline string support (``"""..."""``) makes it ideal for storing narrative text alongside structured metadata. Python 3.11+ includes ``tomllib`` in the standard library; no external dependency needed.
 
-2. **Jinja for prompt templates** — Prompt files use ``.jinja`` extension for template rendering. System prompt and user prompt are stored as separate files to mirror the Bedrock Converse API's ``system`` / ``messages`` separation, enabling prompt caching on the system prompt.
+2. **Jinja for prompt templates** — Prompt files use ``.jinja`` extension for template rendering. System prompt and user prompt are stored as separate files to mirror the OpenAI Chat API's ``system`` / ``messages`` separation, enabling prompt caching on the system prompt.
 
 3. **Normal and attack test cases are separated** — ``normal/`` contains non-malicious inputs for correctness testing. ``attack/`` contains inputs with embedded malicious payloads for security testing.
 
@@ -256,7 +256,7 @@ Prompt Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Each prompt version — whether UC or judge — is a directory containing three files:
 
-**system-prompt.jinja** — The system prompt sent via Bedrock Converse API's ``system`` parameter. This is fixed per request and benefits from prompt caching.
+**system-prompt.jinja** — The system prompt sent via OpenAI Chat API's ``system`` parameter. This is fixed per request and benefits from prompt caching.
 
 .. code-block:: text
 

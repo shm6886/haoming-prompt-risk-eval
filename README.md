@@ -1,80 +1,219 @@
-# prompt-risk-eval
+[![Documentation Status](https://readthedocs.org/projects/shm6886-prompt-risk/badge/?version=latest)](https://shm6886-prompt-risk.readthedocs.io/en/latest/)
+[![CI](https://github.com/shm6886/haoming-prompt-risk-eval/actions/workflows/main.yml/badge.svg)](https://github.com/shm6886/haoming-prompt-risk-eval/actions?query=workflow:CI)
+[![codecov](https://codecov.io/gh/shm6886/haoming-prompt-risk-eval/branch/main/graph/badge.svg)](https://codecov.io/gh/shm6886/haoming-prompt-risk-eval)
+[![Release History](https://img.shields.io/badge/✍️_Release_History!--None.svg?style=social&logo=github)](https://github.com/shm6886/haoming-prompt-risk-eval/blob/main/release-history.rst)
+[![Star me on GitHub](https://img.shields.io/badge/⭐_Star_me_on_GitHub!--None.svg?style=social&logo=github)](https://github.com/shm6886/haoming-prompt-risk-eval)
 
-A Python framework for evaluating and detecting security risks in LLM prompts used in enterprise pipelines.
+---
 
-## What I Built
+[![GitHub](https://img.shields.io/badge/Link-GitHub-blue.svg)](https://github.com/shm6886/haoming-prompt-risk-eval)
+[![Submit Issue](https://img.shields.io/badge/Link-Submit_Issue-blue.svg)](https://github.com/shm6886/haoming-prompt-risk-eval/issues)
+[![Request Feature](https://img.shields.io/badge/Link-Request_Feature-blue.svg)](https://github.com/shm6886/haoming-prompt-risk-eval/issues)
+[![Download](https://img.shields.io/badge/Link-Download-blue.svg)](https://pypi.org/pypi/prompt-risk#files)
 
-I built `prompt_risk` to address a gap I kept running into: most LLM security tooling focuses on model-level guardrails, but very little attention goes to the **prompt itself** — how it's structured, what instructions it carries, and whether it's resistant to adversarial inputs.
+# Welcome to `prompt_risk` Documentation
 
-This project combines two approaches:
-- **Deterministic checks** — secrets detection, keyword blocklists, structural pattern matching
-- **LLM-as-Judge** — a secondary model that semantically evaluates whether a prompt is over-permissive, ambiguous, or vulnerable to injection
+`prompt_risk` is a Python framework for detecting, scoring, and mitigating security risks in LLM prompts deployed across enterprise environments. It combines deterministic rule-based scanning (secrets detection, keyword blocklists) with LLM-as-Judge semantic analysis to catch vulnerabilities that regex alone cannot find — over-permissive authorization, hardcoded sensitive data, role confusion, instruction conflicts, and logic ambiguity.
 
-The result is an evaluation pipeline that can run in CI, plug into a prompt registry, and catch vulnerabilities that regex alone will miss.
+The project ships with six insurance-industry use cases (from FNOL (First Notice of Loss) claim intake pipelines to autonomous claims agents) as reference implementations, each with versioned prompt templates, normal and adversarial test data, and automated evaluation pipelines. Prompts and test cases are stored as Jinja templates and TOML files under a structured `data/` directory, making it easy to version, review, and extend.
 
-## Use Case: Insurance Claim Intake (UC1)
+Designed for integration into CI/CD workflows and prompt registries, `prompt_risk` turns prompt security from a manual, ad-hoc review process into a repeatable, auditable engineering practice. Install via `pip install prompt-risk` and start scanning your prompts programmatically.
 
-The reference implementation is an insurance FNOL (First Notice of Loss) pipeline — a real-world scenario where LLM prompts process sensitive claim data and where security failures have direct financial and legal consequences.
+- [Documentation & Demo](https://shm6886-prompt-risk.readthedocs.io/en/latest/)
+- [GitHub Repository](https://github.com/shm6886/haoming-prompt-risk-eval)
+- [Submit an Issue](https://github.com/shm6886/haoming-prompt-risk-eval/issues)
 
-The pipeline stages:
+## How It Works
 
-```
-FNOL Narrative → P1 Extraction → P2 Classification → P3 Triage
-```
+**1. Use Case Pipeline** — Each business use case is a chain of LLM-driven steps. UC1 (Claim Intake) transforms a raw narrative into a structured, classified, triaged claim record:
 
-Each stage has:
-- Versioned prompt templates (Jinja2 + TOML)
-- Normal test cases (realistic claim scenarios)
-- Attack test cases (prompt injection, role confusion, severity downgrade)
-- Automated evaluation with pass/fail assertions
+```mermaid
+graph LR
+    IN["FNOL Narrative"] --> P1["P1<br/>Extraction"]
+    P1 -- "JSON" --> P2["P2<br/>Classification"]
+    P2 -- "JSON" --> P3["P3<br/>Triage"]
+    P3 -- "JSON" --> P4["P4<br/>Coverage"]
+    P4 -- "JSON" --> P5["P5<br/>Routing"]
 
-## Quick Start
-
-```bash
-pip install uv
-uv sync
-
-# Run extraction on an attack case
-python examples/uc1-claim-intake/run_uc1_p1_extraction.py
-
-# Run with judge evaluation
-python examples/judges/run_j1_on_uc1_p1.py
-```
-
-## Project Structure
-
-```
-data/               # Prompt templates and test cases (versioned)
-prompt_risk/        # Core Python package
-  one/              # OpenAI client singleton
-  uc/uc1/           # Use case 1: claim intake runners
-  judges/           # LLM-as-Judge implementations
-  evaluations.py    # Assertion engine
-  bedrock_utils.py  # LLM call wrapper
-examples/           # Runnable scripts
-tests/              # Unit tests
-docs/               # Sphinx documentation
+    style P1 fill:#1a5276,stroke:#2e86c1,color:#fff
+    style P2 fill:#1a5276,stroke:#2e86c1,color:#fff
+    style P3 fill:#1a5276,stroke:#2e86c1,color:#fff
+    style P4 fill:#2c3e50,stroke:#7f8c8d,color:#aaa
+    style P5 fill:#2c3e50,stroke:#7f8c8d,color:#aaa
+    style IN fill:#1a1a2e,stroke:#3d3d5c,color:#eee
 ```
 
-## Design Decisions
+Each step receives the previous step's JSON output as input. P1-P3 are implemented; P4-P5 are planned (shown in gray).
 
-**Prompts live in `data/`, not in code.** Each prompt version is a separate directory with a Jinja template and a TOML metadata file. This makes prompt changes reviewable in PRs just like code changes.
+---
 
-**Test data is structured, not freeform.** Each test case declares expected field values and attack targets. The evaluation engine checks both — so you know not just whether the model responded, but whether it responded correctly and resisted the attack.
+**2. Single Step — LLM Call with Validation & Retry** — Every LLM-driven step follows the same pattern: render the prompt, call the model, validate the output, retry on failure:
 
-**The judge is a separate model call.** Rather than embedding judgment into the primary prompt, `j1_over_permissive` runs as an independent pass. This keeps evaluation decoupled from extraction logic.
+```mermaid
+graph TD
+    RENDER["Render Jinja template<br/>with input data"]
+    CALL["Call LLM<br/>(OpenAI Chat API)"]
+    EXTRACT["Extract JSON<br/>from response"]
+    VALIDATE{"Pydantic<br/>validation"}
+    OK["Return validated output"]
+    FEEDBACK["Append error to<br/>conversation history"]
+    FAIL["Raise exception"]
 
-## Running Tests
+    RENDER --> CALL
+    CALL --> EXTRACT
+    EXTRACT --> VALIDATE
+    VALIDATE -- "pass" --> OK
+    VALIDATE -- "fail, attempt < 3" --> FEEDBACK
+    FEEDBACK --> CALL
+    VALIDATE -- "fail, attempt = 3" --> FAIL
 
-```bash
-mise run cov
+    style OK fill:#1e6f3e,stroke:#27ae60,color:#fff
+    style FAIL fill:#922b21,stroke:#c0392b,color:#fff
+    style VALIDATE fill:#7d6608,stroke:#d4ac0d,color:#fff
 ```
 
-## Documentation
+The retry loop feeds the Pydantic `ValidationError` back to the LLM as a user message, giving it concrete feedback to self-correct rather than retrying blindly.
 
-Built with Sphinx. To build locally:
+---
 
-```bash
-mise run build-doc
-mise run view-doc
+**3. Automated Evaluation** — Each prompt is tested against TOML-defined test cases with two types of assertions:
+
+```mermaid
+graph LR
+    subgraph tc["Test Case (TOML)"]
+        INPUT["[input]<br/>FNOL narrative"]
+        EXP["[expected]<br/>date = 2026-04-15<br/>police = HPD-04153"]
+        ATK["[attack_target]<br/>injury ≠ none<br/>severity ≠ low"]
+    end
+
+    RUN["Run prompt<br/>on input"] --> CHECK
+
+    subgraph CHECK["Assertions"]
+        EQ["expected: eq / in<br/><i>output must match</i>"]
+        NE["attack_target: ne<br/><i>output must NOT match</i>"]
+    end
+
+    CHECK --> PASS["All pass → ✅"]
+    CHECK --> FAILR["Any fail → ❌"]
+
+    INPUT --> RUN
+
+    style EXP fill:#1e6f3e,stroke:#27ae60,color:#fff
+    style ATK fill:#922b21,stroke:#c0392b,color:#fff
+    style PASS fill:#1e6f3e,stroke:#27ae60,color:#fff
+    style FAILR fill:#922b21,stroke:#c0392b,color:#fff
 ```
+
+Normal cases verify correct extraction (`eq`/`in`). Attack cases verify the prompt resisted injection — the output must NOT contain attacker-injected values (`ne`).
+
+---
+
+**4. LLM-as-Judge Business Correctness** — Assertion-based evaluation checks a few key fields with hard-coded rules. LLM-as-Judge fills the gap by evaluating whether **every** extracted field is factually correct:
+
+```mermaid
+graph LR
+    subgraph pipeline["Two-Step Pipeline"]
+        direction TB
+        STEP1["Step 1: Run Extraction<br/>FNOL → P1 → JSON output"]
+        STEP2["Step 2: Run Judge<br/>input + output → verdict"]
+        STEP1 --> STEP2
+    end
+
+    STEP2 --> VERDICT
+
+    subgraph VERDICT["Judge Output"]
+        PASS_F["pass: true/false"]
+        REASON["reason: explanation"]
+        ERRORS["field_errors: [{field, issue}]"]
+    end
+
+    style STEP1 fill:#1a5276,stroke:#2e86c1,color:#fff
+    style STEP2 fill:#784212,stroke:#e67e22,color:#fff
+    style PASS_F fill:#1e6f3e,stroke:#27ae60,color:#fff
+```
+
+The per-prompt judge evaluates **business correctness only** — it does NOT evaluate injection resistance. Keeping them separate enables a diagnostic matrix:
+
+|  | Security ✅ | Security ❌ |
+|---|---|---|
+| **Business ✅** | Ideal | Attack detected, output correct |
+| **Business ❌** | Model error | Attack corrupted output |
+
+---
+
+**5. LLM-as-Judge Security Assessment** — Five judges evaluate prompt text for distinct risk dimensions. Each judge is itself a prompt that performs semantic analysis:
+
+```mermaid
+graph LR
+    PROMPT["Target Prompt<br/>(system + user template)"]
+
+    PROMPT --> J1["<b>J1</b><br/>Over-Permissive"]
+    PROMPT --> J2["<b>J2</b><br/>Sensitive Data"]
+    PROMPT --> J3["<b>J3</b><br/>Role Confusion"]
+    PROMPT --> J4["<b>J4</b><br/>Instruction Conflict"]
+    PROMPT --> J5["<b>J5</b><br/>Logic Ambiguity"]
+
+    J1 --> S1["Score 1-5<br/>+ per-criterion findings"]
+    J2 --> S2["Score 1-5"]
+    J3 --> S3["Score 1-5"]
+    J4 --> S4["Score 1-5"]
+    J5 --> S5["Score 1-5"]
+
+    style J1 fill:#784212,stroke:#e67e22,color:#fff
+    style J2 fill:#4a3520,stroke:#784212,color:#aaa
+    style J3 fill:#4a3520,stroke:#784212,color:#aaa
+    style J4 fill:#4a3520,stroke:#784212,color:#aaa
+    style J5 fill:#4a3520,stroke:#784212,color:#aaa
+    style S1 fill:#784212,stroke:#e67e22,color:#fff
+    style S2 fill:#4a3520,stroke:#784212,color:#aaa
+    style S3 fill:#4a3520,stroke:#784212,color:#aaa
+    style S4 fill:#4a3520,stroke:#784212,color:#aaa
+    style S5 fill:#4a3520,stroke:#784212,color:#aaa
+```
+
+J1 (implemented) evaluates 5 criteria: refusal capability, scope boundaries, unconditional compliance, failure handling, and anti-injection guardrails. J2-J5 are planned (shown in muted colors).
+
+---
+
+**6. Prompt Versioning** — Every prompt (including judges) is versioned with its own template files and metadata:
+
+```mermaid
+graph TD
+    subgraph uc["Use Case: uc1-claim-intake"]
+        subgraph p1["Prompt: p1-extraction"]
+            V1P["v01 — production<br/>✅ guardrails"]
+            V2P["v02 — over-permissive<br/>❌ 'never refuse'"]
+            V3P["v03 — minimal<br/>❌ no protections"]
+            V4P["v04 — conflicting<br/>⚠️ mixed signals"]
+        end
+    end
+
+    subgraph jd["Judges"]
+        subgraph j1["Judge: j1-over-permissive"]
+            V1J["v01"]
+        end
+    end
+
+    subgraph files["Each version contains"]
+        SYS["system-prompt.jinja"]
+        USR["user-prompt.jinja"]
+        META["metadata.toml<br/>description · date · risk_profile"]
+    end
+
+    V1P --- files
+    V1J --- files
+
+    style V1P fill:#1e6f3e,stroke:#27ae60,color:#fff
+    style V2P fill:#922b21,stroke:#c0392b,color:#fff
+    style V3P fill:#922b21,stroke:#c0392b,color:#fff
+    style V4P fill:#7d6608,stroke:#d4ac0d,color:#fff
+    style V1J fill:#784212,stroke:#e67e22,color:#fff
+```
+
+Multiple versions coexist — production-quality and intentionally vulnerable — so the judge system can demonstrate detection across risk profiles.
+
+## Learn More
+
+- [Full Documentation](https://shm6886-prompt-risk.readthedocs.io/en/latest/) — Project background, risk taxonomy, governance recommendations, and API reference.
+- [Prompt Evaluation Demo](https://shm6886-prompt-risk.readthedocs.io/en/latest/06-Prompt-Runner-And-Evaluation-Demo/index.html) — Interactive notebook: run prompts against test cases and evaluate outputs.
+- [Judge Assessment Demo](https://shm6886-prompt-risk.readthedocs.io/en/latest/08-Judge-Demo/index.html) — Interactive notebook: run LLM-as-Judge on prompt versions and inspect risk scores.

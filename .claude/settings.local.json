@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(uv run:*)",
+      "Bash(git rm:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl:*)",
+      "Bash(sed -i '' 's/shm6886_prompt_risk/shm6868_prompt_risk/g; s/shm6886-prompt-risk/shm6868-prompt-risk/g' /Users/haoming.sun/Documents/GitHub/haoming-prompt-risk-eval/.mise/tasks/setup-readthedocs.py)",
+      "Bash(sed -i '' s/bedrock_utils/openai_utils/g /Users/haoming.sun/Documents/GitHub/haoming-prompt-risk-eval/.claude/skills/gen-prompt/SKILL.md)",
+      "Bash(sed -i '' 's/bedrock_utils\\\\.py/openai_utils.py/g' /Users/haoming.sun/Documents/GitHub/haoming-prompt-risk-eval/README.md)",
+      "Bash(sed -i '' s/one_03_boto_ses/one_03_openai/g /Users/haoming.sun/Documents/GitHub/haoming-prompt-risk-eval/docs/source/api/prompt_risk/one/one_03_openai.rst)",
+      "Bash(sed -i '' s/one_03_boto_ses/one_03_openai/g /Users/haoming.sun/Documents/GitHub/haoming-prompt-risk-eval/docs/source/api/prompt_risk/one/__init__.rst)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh run:*)",
+      "Bash(python3 -c \"import sys,json; runs=json.load\\(sys.stdin\\)['workflow_runs']; [print\\(r['status'], r['conclusion'], r['head_commit']['message'][:60]\\) for r in runs]\")",
+      "Bash(python3 -c \"import sys,json; r=json.load\\(sys.stdin\\)['workflow_runs'][0]; print\\('run_id:', r['id']\\)\")",
+      "Bash(python3 -c ':*)",
+      "Bash(git remote:*)"
+    ]
+  }
+}

@@ -114,7 +114,7 @@ from pydantic import BaseModel, Field, ValidationError
 from ...constants import PromptIdEnum
 from ...prompts import Prompt
 from ...llm_output import extract_json
-from ...bedrock_utils import converse
+from ...openai_utils import converse
 
 if T.TYPE_CHECKING:
     from mypy_boto3_bedrock_runtime import BedrockRuntimeClient

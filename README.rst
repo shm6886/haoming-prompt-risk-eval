@@ -3,11 +3,11 @@
     :target: https://shm6886-prompt-risk.readthedocs.io/en/latest/
     :alt: Documentation Status
 
-.. image:: https://github.com/shm6886/haoming-sun-prompt-risk-eval/actions/workflows/main.yml/badge.svg
-    :target: https://github.com/shm6886/haoming-sun-prompt-risk-eval/actions?query=workflow:CI
+.. image:: https://github.com/shm6886/haoming-prompt-risk-eval/actions/workflows/main.yml/badge.svg
+    :target: https://github.com/shm6886/haoming-prompt-risk-eval/actions?query=workflow:CI
 
-.. image:: https://codecov.io/gh/shm6886/haoming-sun-prompt-risk-eval/branch/main/graph/badge.svg
-    :target: https://codecov.io/gh/shm6886/haoming-sun-prompt-risk-eval
+.. image:: https://codecov.io/gh/shm6886/haoming-prompt-risk-eval/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/shm6886/haoming-prompt-risk-eval
 
 .. .. image:: https://img.shields.io/pypi/v/prompt-risk.svg
     :target: https://pypi.python.org/pypi/prompt-risk
@@ -19,10 +19,10 @@
     :target: https://pypi.python.org/pypi/prompt-risk
 
 .. image:: https://img.shields.io/badge/✍️_Release_History!--None.svg?style=social&logo=github
-    :target: https://github.com/shm6886/haoming-sun-prompt-risk-eval/blob/main/release-history.rst
+    :target: https://github.com/shm6886/haoming-prompt-risk-eval/blob/main/release-history.rst
 
 .. image:: https://img.shields.io/badge/⭐_Star_me_on_GitHub!--None.svg?style=social&logo=github
-    :target: https://github.com/shm6886/haoming-sun-prompt-risk-eval
+    :target: https://github.com/shm6886/haoming-prompt-risk-eval
 
 ------
 
@@ -33,13 +33,13 @@
     :target: `install`_
 
 .. image:: https://img.shields.io/badge/Link-GitHub-blue.svg
-    :target: https://github.com/shm6886/haoming-sun-prompt-risk-eval
+    :target: https://github.com/shm6886/haoming-prompt-risk-eval
 
 .. image:: https://img.shields.io/badge/Link-Submit_Issue-blue.svg
-    :target: https://github.com/shm6886/haoming-sun-prompt-risk-eval/issues
+    :target: https://github.com/shm6886/haoming-prompt-risk-eval/issues
 
 .. image:: https://img.shields.io/badge/Link-Request_Feature-blue.svg
-    :target: https://github.com/shm6886/haoming-sun-prompt-risk-eval/issues
+    :target: https://github.com/shm6886/haoming-prompt-risk-eval/issues
 
 .. image:: https://img.shields.io/badge/Link-Download-blue.svg
     :target: https://pypi.org/pypi/prompt-risk#files
@@ -57,8 +57,8 @@ The project ships with six insurance-industry use cases (from FNOL (First Notice
 Designed for integration into CI/CD workflows and prompt registries, ``prompt_risk`` turns prompt security from a manual, ad-hoc review process into a repeatable, auditable engineering practice. Install via ``pip install prompt-risk`` and start scanning your prompts programmatically.
 
 - `Documentation & Demo <https://shm6886-prompt-risk.readthedocs.io/en/latest/>`_
-- `GitHub Repository <https://github.com/shm6886/haoming-sun-prompt-risk-eval>`_
-- `Submit an Issue <https://github.com/shm6886/haoming-sun-prompt-risk-eval/issues>`_
+- `GitHub Repository <https://github.com/shm6886/haoming-prompt-risk-eval>`_
+- `Submit an Issue <https://github.com/shm6886/haoming-prompt-risk-eval/issues>`_
 
 
 How It Works
@@ -92,7 +92,7 @@ Each step receives the previous step's JSON output as input. P1-P3 are implement
 
     graph TD
         RENDER["Render Jinja template<br/>with input data"]
-        CALL["Call LLM<br/>(Bedrock Converse API)"]
+        CALL["Call LLM<br/>(OpenAI Chat API)"]
         EXTRACT["Extract JSON<br/>from response"]
         VALIDATE{"Pydantic<br/>validation"}
         OK["Return validated output"]

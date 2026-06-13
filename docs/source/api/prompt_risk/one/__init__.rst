@@ -13,5 +13,5 @@ sub packages and modules
     api <api>
     one_01_main <one_01_main>
     one_02_config <one_02_config>
-    one_03_boto_ses <one_03_boto_ses>
+    one_03_openai <one_03_openai>
     

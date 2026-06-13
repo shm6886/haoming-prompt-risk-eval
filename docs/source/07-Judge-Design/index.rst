@@ -105,7 +105,7 @@ The evaluation code is split into two layers:
            |                                    |
            | J1UserPromptData                   |
            | (raw strings)                      v
-           +-----------------------------→  Bedrock Converse API
+           +-----------------------------→  OpenAI Chat API
                                                 |
                                                 v
                                             J1Result
@@ -164,7 +164,7 @@ A concrete example: running J1 judge (v01) on UC1-P1 prompt (v01) with test data
        |
        |  6. Render judge user-prompt.jinja with target prompt texts
        |
-       |  7. Call Bedrock Converse API
+       |  7. Call OpenAI Chat API
        |     system = judge_system_prompt (cached)
        |     messages = [judge_user_prompt]
        |
@@ -180,7 +180,7 @@ A concrete example: running J1 judge (v01) on UC1-P1 prompt (v01) with test data
 3. The binding layer assembles ``J1UserPromptData`` (two plain strings) and passes it to the framework layer.
 4. The framework layer loads the **judge prompt** (J1 v01) — its own system and user Jinja templates.
 5. The framework layer renders the judge's user prompt, injecting the target prompt texts into the template.
-6. The framework layer calls the **Bedrock Converse API** with the judge's system prompt (cached) and the rendered user message.
+6. The framework layer calls the **OpenAI Chat API** with the judge's system prompt (cached) and the rendered user message.
 7. The LLM response is parsed and validated into a **J1Result** (overall risk, score, per-criterion findings).
 
 ----

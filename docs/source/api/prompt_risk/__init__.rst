@@ -14,7 +14,7 @@ sub packages and modules
     one <one/__init__>
     uc <uc/__init__>
     api <api>
-    bedrock_utils <bedrock_utils>
+    openai_utils <openai_utils>
     constants <constants>
     evaluations <evaluations>
     exc <exc>
